@@ -10,7 +10,8 @@ export const getComments = async (req: Request, res: Response, next: NextFunctio
 
     const comments = await Comment.find({ articleId })
       .populate('userId', 'name avatarUrl')
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
 
     res.status(200).json({
       status: 'success',

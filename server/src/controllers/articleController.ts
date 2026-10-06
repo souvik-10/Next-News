@@ -35,8 +35,14 @@ export const getArticles = async (req: Request, res: Response, next: NextFunctio
       sortOption = { viewsCount: -1, createdAt: -1 };
     }
 
+    // Performance optimization: Projection and .lean() for fast document serialization
     const [articles, total] = await Promise.all([
-      Article.find(queryFilter).sort(sortOption).skip(skip).limit(limit),
+      Article.find(queryFilter)
+        .select('title slug summary category imageUrl author tags viewsCount readTimeMinutes isBreaking createdAt')
+        .sort(sortOption)
+        .skip(skip)
+        .limit(limit)
+        .lean(),
       Article.countDocuments(queryFilter),
     ]);
 
@@ -61,8 +67,10 @@ export const getArticles = async (req: Request, res: Response, next: NextFunctio
 export const getBreakingNews = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const breakingArticles = await Article.find({ isBreaking: true })
+      .select('title slug category isBreaking createdAt')
       .sort({ createdAt: -1 })
-      .limit(5);
+      .limit(5)
+      .lean();
 
     res.status(200).json({
       status: 'success',
@@ -90,9 +98,8 @@ export const getArticleByIdOrSlug = async (req: Request, res: Response, next: Ne
       return next(new AppError('Article not found', 404));
     }
 
-    // Increment views count asynchronously
-    article.viewsCount += 1;
-    await article.save();
+    // Increment views count asynchronously without blocking response
+    Article.findByIdAndUpdate(article._id, { $inc: { viewsCount: 1 } }).catch(() => {});
 
     res.status(200).json({
       status: 'success',
@@ -113,7 +120,6 @@ export const createArticle = async (req: Request, res: Response, next: NextFunct
       return next(new AppError('Title, summary, content, category, and author are required', 400));
     }
 
-    // Generate unique slug
     let slug = title
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
@@ -137,7 +143,6 @@ export const createArticle = async (req: Request, res: Response, next: NextFunct
       readTimeMinutes: readTimeMinutes || 3,
     });
 
-    // Broadcast SSE real-time event
     if (article.isBreaking) {
       sseBroadcaster.broadcast('breaking_news', {
         id: article._id,

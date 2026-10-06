@@ -8,20 +8,25 @@ export const getWatchlist = async (req: Request, res: Response, next: NextFuncti
   try {
     const userId = req.user?.id;
 
-    let watchlist = await Watchlist.findOne({ userId }).populate({
-      path: 'articles',
-      select: 'title slug summary category imageUrl author readTimeMinutes viewsCount createdAt isBreaking',
-    });
+    let watchlist = await Watchlist.findOne({ userId })
+      .populate({
+        path: 'articles',
+        select: 'title slug summary category imageUrl author readTimeMinutes viewsCount createdAt isBreaking',
+      })
+      .lean();
 
     if (!watchlist) {
-      watchlist = await Watchlist.create({ userId, articles: [] });
+      await Watchlist.create({ userId, articles: [] });
+      watchlist = { userId: userId as any, articles: [], updatedAt: new Date() } as any;
     }
+
+    const articlesList = watchlist?.articles || [];
 
     res.status(200).json({
       status: 'success',
-      results: watchlist.articles.length,
+      results: articlesList.length,
       data: {
-        watchlist: watchlist.articles,
+        watchlist: articlesList,
       },
     });
   } catch (error) {
@@ -45,10 +50,10 @@ export const addToWatchlist = async (req: Request, res: Response, next: NextFunc
 
     let watchlist = await Watchlist.findOne({ userId });
     if (!watchlist) {
-      watchlist = await Watchlist.create({ userId, articles: [articleId] });
+      watchlist = await Watchlist.create({ userId, articles: [articleId as any] });
     } else {
-      if (!watchlist.articles.includes(articleId)) {
-        watchlist.articles.push(articleId);
+      if (!watchlist.articles.some((id) => id.toString() === articleId)) {
+        watchlist.articles.push(articleId as any);
         await watchlist.save();
       }
     }
@@ -99,7 +104,7 @@ export const checkWatchlistStatus = async (req: Request, res: Response, next: Ne
     const userId = req.user?.id;
     const { articleId } = req.params;
 
-    const watchlist = await Watchlist.findOne({ userId });
+    const watchlist = await Watchlist.findOne({ userId }).lean();
     const isSaved = watchlist
       ? watchlist.articles.some((id) => id.toString() === articleId)
       : false;
