@@ -1,11 +1,18 @@
 import { Router } from 'express';
-import { getArticles, getBreakingNews, getArticleByIdOrSlug } from '../controllers/articleController';
+import {
+  getArticles,
+  getBreakingNews,
+  getArticleByIdOrSlug,
+  createArticle,
+  subscribeRealTime,
+} from '../controllers/articleController';
 
 const router = Router();
 
-// Phase 2: Route definitions
 router.get('/', getArticles);
+router.post('/', createArticle);
 router.get('/breaking', getBreakingNews);
-router.get('/:identifier', getArticleByIdOrSlug);
+router.get('/realtime/stream', subscribeRealTime);
+router.get('/:idOrSlug', getArticleByIdOrSlug);
 
 export default router;

@@ -1,11 +1,19 @@
 import { Router } from 'express';
-import { getWatchlist, addToWatchlist, removeFromWatchlist } from '../controllers/watchlistController';
+import {
+  getWatchlist,
+  addToWatchlist,
+  removeFromWatchlist,
+  checkWatchlistStatus,
+} from '../controllers/watchlistController';
+import { protect } from '../middleware/authMiddleware';
 
 const router = Router();
 
-// Phase 2: Route definitions (Auth to be added in Phase 3)
+router.use(protect);
+
 router.get('/', getWatchlist);
-router.post('/:articleId', addToWatchlist);
+router.post('/', addToWatchlist);
+router.get('/status/:articleId', checkWatchlistStatus);
 router.delete('/:articleId', removeFromWatchlist);
 
 export default router;

@@ -1,11 +1,14 @@
 import { Router } from 'express';
 import { getProfile, updateProfile, uploadAvatar } from '../controllers/userController';
+import { protect } from '../middleware/authMiddleware';
+import { uploadAvatarMiddleware } from '../middleware/uploadMiddleware';
 
 const router = Router();
 
-// Phase 2: Route definitions (Authentication middleware to be added in Phase 3)
+router.use(protect);
+
 router.get('/profile', getProfile);
 router.put('/profile', updateProfile);
-router.post('/profile/avatar', uploadAvatar);
+router.post('/profile/avatar', uploadAvatarMiddleware.single('avatar'), uploadAvatar);
 
 export default router;
