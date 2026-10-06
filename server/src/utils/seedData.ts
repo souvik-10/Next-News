@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import { Article } from '../models/Article';
 
 const sampleArticles = [
@@ -99,6 +100,10 @@ const sampleArticles = [
 
 export const seedDatabaseIfEmpty = async () => {
   try {
+    if (mongoose.connection.readyState !== 1) {
+      console.log('[Database Info] Skipping seeder: MongoDB not connected.');
+      return;
+    }
     const count = await Article.countDocuments();
     if (count === 0) {
       console.log('Seeding initial news articles into database...');
