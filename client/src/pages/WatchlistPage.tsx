@@ -10,6 +10,7 @@ export const WatchlistPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    document.title = 'My Watchlist - Next News';
     const fetchWatchlist = async () => {
       try {
         setIsLoading(true);

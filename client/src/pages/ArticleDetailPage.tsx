@@ -24,6 +24,7 @@ export const ArticleDetailPage: React.FC = () => {
         setError(null);
         const res = await articleService.getArticleByIdOrSlug(idOrSlug);
         setArticle(res.data.article);
+        document.title = `${res.data.article.title} - Next News`;
 
         if (isAuthenticated) {
           try {

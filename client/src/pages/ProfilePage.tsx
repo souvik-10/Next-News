@@ -16,6 +16,7 @@ export const ProfilePage: React.FC = () => {
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   useEffect(() => {
+    document.title = 'Account Profile - Next News';
     const fetchProfile = async () => {
       try {
         setIsLoading(true);

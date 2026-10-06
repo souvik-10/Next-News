@@ -19,6 +19,13 @@ export const HomePage: React.FC = () => {
 
   useEffect(() => {
     setPage(1);
+    if (search) {
+      document.title = `Search: ${search} - Next News`;
+    } else if (category) {
+      document.title = `${category} Headlines - Next News`;
+    } else {
+      document.title = 'Next News - Real-Time News & Analysis Platform';
+    }
   }, [category, search, sort]);
 
   useEffect(() => {
